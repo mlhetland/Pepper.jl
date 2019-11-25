@@ -81,3 +81,33 @@ let
         end
     end
 end
+
+let
+    lines = split("""
+    Cyanaurate:
+        - mataeologue
+        - neoclassicism
+        - refractility
+    Microwave:
+        - polygrammatic
+        - sugary
+        - unpictorial: 5
+    """, "\n")
+    s = Pepper.System()
+    CLI.parse(lines, s)
+
+    # Pepper.setpts(s, "Microwave" => "unpictorial", 5)
+
+    cases = []
+    Pepper.paprika(s, ptsum=100) do s, base_idx, lhs, rhs
+        choice = rand(1:2)
+        push!(cases, [base_idx, lhs, rhs, choice])
+        choice
+    end
+
+    Y = Pepper.shape(s)
+    n = length(Y)
+
+    @test sum(Pepper.getpts(s, i, Y[i]) for i = 1:n) == 100
+    @test Pepper.getpts(s, "Microwave" => "unpictorial") == 5
+end

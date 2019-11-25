@@ -38,9 +38,20 @@ function rhs_iter(crit, bits, lhs)
 
 end
 
-function paprika(oracle::Function, scores; maxdegree=2)
+function paprika(oracle::Function, scores; maxdegree=2, total=nothing)
 
     Y = shape(scores); P = LP.Model(Y); n = length(Y)
+
+    for i = 1:n, j=1:Y[i]
+        pts = getpts(scores, i, j)
+        if pts ≢ nothing
+            LP.fix(P, i, j, pts)
+        end
+    end
+
+    if total ≢ nothing
+        LP.fixtotal(P, total)
+    end
 
     for degree = 2:min(maxdegree, n), base in subsets(1:n, degree)
 
