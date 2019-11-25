@@ -12,6 +12,8 @@ mutable struct Model
     LP          :: JuMP.Model
     vars
     base
+    shape
+    maxval
 end
 function Model(shape)
 
@@ -20,10 +22,15 @@ function Model(shape)
     n = length(Y)
 
     @variable(P, x[i=1:n, j=1:Y[i]] >= 0)
+
+    @variable(P, z >= 0)
+    @constraint(P, z == sum(x[i, Y[i]] for i=1:n))
+
     @objective(P, Min, sum(x))
+
     @constraint(P, [i=1:n, j=1:Y[i]-1], x[i,j] + 1 ≤ x[i,j+1])
 
-    Model(P, x, [])
+    Model(P, x, [], Y, z)
 
 end
 
@@ -54,5 +61,8 @@ lt!(m::Model, lhs, rhs) = gt!(m, rhs, lhs)
 eq!(m::Model, lhs, rhs) = [@constraint(m.LP, lhs_minus_rhs(m, lhs, rhs) == 0)]
 
 value(m::Model, i, j) = JuMP.value(m.vars[i, j])
+
+fix(m::Model, i, j, v) = JuMP.fix(m.vars[i, j], v; force = true)
+fixtotal(m::Model, v) = JuMP.fix(m.maxval, v; force = true)
 
 end

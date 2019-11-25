@@ -69,6 +69,43 @@ Run your `pepper` alias with this file as its argument, and you'll be asked to
 rank various combinations. Once you're done, the program prints out a point
 system with a score for each category.
 
+You can also specify some of the scoreas ahead of time, as in the following:
+
+```
+References:
+    - poor
+    - good
+Social skills:
+    - poor
+    - good
+Enthusiasm:
+    - poor
+    - good: 5
+```
+
+You can also specify the maximum point total with the `--total` (or `-t`)
+argument. So for example, with the previous file in `test.yaml`, you could
+run:
+
+```
+$ pepper -t 10 test.yaml
+```
+
+You might then (after answering a series of questions) end up with output
+like:
+
+```
+References:
+    - poor: 0
+    - good: 2
+Social skills:
+    - poor: 0
+    - good: 3
+Enthusiasm:
+    - poor: 0
+    - good: 5
+```
+
 [1]: http://en.wikipedia.org/wiki/Potentially_all_pairwise_rankings_of_all_possible_alternatives
 [2]: https://github.com/JuliaOpt/JuMP.jl
 [3]: https://github.com/JuliaLang/PackageCompiler.jl

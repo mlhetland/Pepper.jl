@@ -5,6 +5,8 @@ module CLI
 using DocOpt, REPL.TerminalMenus
 using Pepper
 
+import Base: show
+
 const doc = """
 Usage:
     pepper [options] <criteria>
@@ -12,6 +14,7 @@ Usage:
 Options:
     -h, --help          Show this screen
     -d, --degree=<num>  Maximum number of criteria per question [default: 2]
+    -t, --total=<num>   The maximum total score attainable
 """
 
 const PROMPTS = [
@@ -58,14 +61,46 @@ function ask_user(s, base, lhs, rhs)
 end
 
 function parse(lines::Vector, delegate)
+    criterion = nothing
     for line in lines
         line = strip(line)
+        err() = error("malformed line: $line")
         if endswith(line, ":")
-            Pepper.addcriterion(delegate, rstrip(chop(line)))
+            criterion = rstrip(chop(line))
+            Pepper.addcriterion(delegate, criterion)
         elseif startswith(line, "-")
-            Pepper.addlevel(delegate, lstrip(chop(line, head=1, tail=0)))
+            level = lstrip(chop(line, head=1, tail=0))
+            pts = nothing
+            parts = split(level, ":")
+            1 ≤ length(parts) ≤ 2 || err()
+            if length(parts) > 1
+                level = strip(parts[1])
+                pts = tryparse(Int, parts[2])
+                pts ≡ nothing && err()
+            end
+            Pepper.addlevel(delegate, level)
+            if pts ≢ nothing
+                Pepper.setpts(delegate, criterion => level, pts)
+            end
         elseif !isempty(line)
-            error("malformed line: $line")
+            err()
+        end
+    end
+end
+
+function show(io::IO, s::Pepper.System)
+    first = true
+    for (criterion, levels) in zip(Pepper.criteria(s), Pepper.levels(s))
+        if first
+            first = false
+        else
+            println()
+        end
+        print(io, criterion, ":")
+        for level in levels
+            println()
+            print(io, " "^4, "- ", level, ": ",
+                  something(Pepper.getpts(s, criterion=>level), "~"))
         end
     end
 end
@@ -78,17 +113,19 @@ function cli()
 
     parse(readlines(args["<criteria>"]), s)
 
-    Pepper.paprika(ask_user, s, maxdegree=Base.parse(Int, args["--degree"]))
+    if args["--total"] ≡ nothing
+        total = nothing
+    else
+        total = Base.parse(Int, args["--total"])
+    end
+
+    Pepper.paprika(ask_user, s,
+        maxdegree = Base.parse(Int, args["--degree"]),
+        total = total)
 
     clearscr()
 
-    for (criterion, levels) in zip(Pepper.criteria(s), Pepper.levels(s))
-        println(criterion, ":")
-        for level in levels
-            println(" "^4, level, ": ",
-                    Pepper.getpts(s, criterion=>level))
-        end
-    end
+    println(s)
 
     println()
 
