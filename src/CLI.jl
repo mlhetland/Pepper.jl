@@ -7,6 +7,15 @@ using Pepper
 
 import Base: show
 
+const logfile = Ref{Union{IO, Nothing}}()
+
+log(args...) = logfile[] ≡ nothing || println(logfile[], args...)
+
+function printlnlog(io, args...)
+    println(io, args...)
+    log(args...)
+end
+
 const doc = """
 Usage:
     pepper [options] <criteria>
@@ -15,6 +24,7 @@ Options:
     -h, --help          Show this screen
     -d, --degree=<num>  Maximum number of criteria per question [default: 2]
     -t, --total=<num>   The maximum total score attainable
+    -l, --logfile=<log> Log history of decisions
 """
 
 const PROMPTS = [
@@ -33,12 +43,12 @@ print_alternatives(criteria, levels, base, lhs, rhs; indent="") =
 function print_alternatives(io::IO, criteria, levels, base, lhs, rhs; indent="")
 
     for (i, c) in enumerate([lhs, rhs])
-        println(io, indent, "Alternative ", i, ":\n")
+        printlnlog(io, indent, "Alternative ", i, ":\n")
         for (criterion, level) in zip(base, c)
-            println(io, indent, " "^3, criteria[criterion], ": ",
+            printlnlog(io, indent, " "^3, criteria[criterion], ": ",
                     levels[criterion][level])
         end
-        println(io)
+        printlnlog(io)
     end
 
 end
@@ -56,6 +66,8 @@ function ask_user(s, base, lhs, rhs)
         exit()
     end
 
+    log("Choice: ", PROMPTS[choice])
+    log()
     return choice
 
 end
@@ -64,6 +76,7 @@ function parse(lines::Vector, delegate)
     criterion = nothing
     for line in lines
         line = strip(line)
+        startswith(line, "#") && continue
         err() = error("malformed line: $line")
         if endswith(line, ":")
             criterion = rstrip(chop(line))
@@ -113,6 +126,12 @@ function cli()
 
     parse(readlines(args["<criteria>"]), s)
 
+    if args["--logfile"] ≡ nothing
+        logfile[] = nothing
+    else
+        logfile[] = open(args["--logfile"], "w")
+    end
+
     if args["--total"] ≡ nothing
         total = nothing
     else
@@ -128,6 +147,8 @@ function cli()
     println(s)
 
     println()
+
+    close(logfile[])
 
 end
 
