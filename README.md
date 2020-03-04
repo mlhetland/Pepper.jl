@@ -94,7 +94,7 @@ $ pepper -t 10 test.yaml
 You might then (after answering a series of questions) end up with output
 like:
 
-```
+```yaml
 References:
     - poor: 0
     - good: 2
