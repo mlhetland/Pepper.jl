@@ -69,9 +69,9 @@ Run your `pepper` alias with this file as its argument, and you'll be asked to
 rank various combinations. Once you're done, the program prints out a point
 system with a score for each category.
 
-You can also specify some of the scoreas ahead of time, as in the following:
+You can also specify some of the scores ahead of time, as in the following:
 
-```
+```yaml
 References:
     - poor
     - good
