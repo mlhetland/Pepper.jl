@@ -148,7 +148,7 @@ function cli()
 
     println()
 
-    close(logfile[])
+    logfile ≢ nothing && close(logfile[])
 
 end
 
