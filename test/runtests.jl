@@ -99,7 +99,7 @@ let
     # Pepper.setpts(s, "Microwave" => "unpictorial", 5)
 
     cases = []
-    Pepper.paprika(s, ptsum=100) do s, base_idx, lhs, rhs
+    Pepper.paprika(s, total=100) do s, base_idx, lhs, rhs
         choice = rand(1:2)
         push!(cases, [base_idx, lhs, rhs, choice])
         choice
