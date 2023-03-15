@@ -6,7 +6,7 @@ module LP
 import JuMP
 using JuMP: @variable, @objective, @constraint
 using MathOptInterface: OPTIMAL
-using Clp
+using HiGHS
 
 mutable struct Model
     LP          :: JuMP.Model
@@ -17,7 +17,9 @@ mutable struct Model
 end
 function Model(shape)
 
-    P = JuMP.Model(JuMP.with_optimizer(Clp.Optimizer, LogLevel = 0))
+    P = JuMP.Model(HiGHS.Optimizer)
+    JuMP.set_silent(P)
+
     Y = shape
     n = length(Y)
 

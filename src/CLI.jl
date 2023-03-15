@@ -33,8 +33,6 @@ const PROMPTS = [
     "Alternative 2 is better"
 ]
 
-const MENU = RadioMenu(PROMPTS)
-
 clearscr() = print("\x1B[2J\x1B[0f")
 
 print_alternatives(criteria, levels, base, lhs, rhs; indent="") =
@@ -60,7 +58,7 @@ function ask_user(s, base, lhs, rhs)
     print_alternatives(Pepper.criteria(s), Pepper.levels(s),
                        base, lhs, rhs)
 
-    choice = request("Which is better?\n", MENU)
+    choice = request("Which is better?\n", RadioMenu(PROMPTS, charset=:ascii))
     if choice ∉ 1:3
         println()
         exit()
